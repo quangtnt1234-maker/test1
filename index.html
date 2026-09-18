@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kế hoạch bữa ăn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF0E4;
+    --panel:#FFFFFF;
+    --panel-soft:#F7F7F0;
+    --ink:#1E2A22;
+    --ink-soft:#586357;
+    --accent:#1F6F5C;
+    --accent-ink:#FFFFFF;
+    --gold:#C98A2B;
+    --warn:#B84B26;
+    --warn-soft:#F5E4DB;
+    --line:#DADACB;
+    --focus:#1F6F5C;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#141F1A;
+      --panel:#1C2921;
+      --panel-soft:#203029;
+      --ink:#ECEFE6;
+      --ink-soft:#AEBBAD;
+      --accent:#4FBE9F;
+      --accent-ink:#0A1512;
+      --gold:#E7B25C;
+      --warn:#E2825F;
+      --warn-soft:#3A2620;
+      --line:#33443B;
+      color-scheme: dark;
+    }
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom: 90px;
+  }
+  @media(min-width: 1024px){
+    body { padding-bottom: 0; }
+  }
+
+  h1,h2,h3{
+    font-family:'Newsreader', Georgia, serif;
+    font-weight:600;
+    margin:0 0 .35em 0;
+    color:var(--ink);
+  }
+  p{margin:0 0 1em 0; color:var(--ink-soft);}
+  .num{font-variant-numeric: tabular-nums; font-feature-settings:"tnum" 1;}
+
+  button, select{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+  }
+  button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible{
+    outline:2.5px solid var(--focus);
+    outline-offset:2px;
+  }
+
+  .shell{
+    max-width:960px;
+    margin:0 auto;
+    padding:24px 16px 40px;
+  }
+  .shell.start-layout {
+    max-width: 1200px;
+    position: relative;
+    padding-right: 16px;
+  }
+  .shell.foods-layout, .shell.overweight-layout{
+    max-width: 1200px;
+    position: relative;
+    padding-left: 16px;
+  }
+  @media(min-width: 1024px){
+    .shell { padding: 32px 20px 72px; }
+    .shell.start-layout { padding-right: 260px; }
+    .shell.foods-layout, .shell.overweight-layout { padding-left: 280px; }
+  }
+
+  .ticket-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    padding-bottom:18px;
+  }
+  .brand{
+    font-family:'Newsreader', serif;
+    font-style:italic;
+    font-size:1.05rem;
+    color:var(--gold);
+  }
+  .steps{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+  .step-dot{
+    width:26px;height:26px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.78rem; font-weight:600;
+    border:1.5px solid var(--line);
+    color:var(--ink-soft);
+    background:transparent;
+  }
+  .step-dot.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+  .step-dot.done{background:var(--panel-soft); border-color:var(--accent); color:var(--accent);}
+  .step-connector{width:14px; height:1.5px; background:var(--line);}
+
+  .perforation{
+    height:14px;
+    background: radial-gradient(circle at 7px 7px, var(--bg) 6px, transparent 6.5px);
+    background-size:22px 14px;
+    background-repeat:repeat-x;
+    margin-bottom:0;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:20px 14px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.02);
+  }
+  @media(min-width: 768px){
+    .card{ padding:32px 28px; }
+  }
+  .card.tight{padding:16px 10px;}
+  @media(min-width: 768px){
+    .card.tight{ padding:24px 22px; }
+  }
+
+  .hero{
+    text-align:center;
+    padding:16px 4px 12px;
+  }
+  .hero h1{font-size:1.7rem; letter-spacing:-.01em;}
+  @media(min-width: 768px){ .hero h1{font-size:2.2rem;} }
+  .hero p{max-width:52ch; margin:0 auto 16px; font-size:0.92rem;}
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:12px 20px;
+    border-radius:10px;
+    font-size:.92rem;
+    font-weight:600;
+    transition:transform .12s ease, background .15s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .btn-primary{background:var(--accent); color:var(--accent-ink);}
+  .btn-primary:hover{transform:translateY(-1px);}
+  .btn-ghost{background:var(--panel); color:var(--ink); border:1.5px solid var(--line) !important;}
+  .btn-ghost:hover{border-color:var(--accent) !important; color:var(--accent);}
+  .btn-sm{padding:10px 16px; font-size:.85rem; border-radius:10px;}
+  .btn-warn{background:var(--warn-soft); color:var(--warn); border:1.5px solid transparent;}
+  .btn-warn:hover{background:var(--warn); color:#fff;}
+
+  .floating-start-container {
+    position: fixed;
+    right: 16px;
+    bottom: 20px;
+    top: auto;
+    transform: none;
+    z-index: 300;
+    width: calc(100% - 32px);
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  @media(min-width: 1024px){
+    .floating-start-container {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      bottom: auto;
+      transform: translateY(-50%);
+      width: 220px;
+      max-width: none;
+    }
+  }
+
+  .floating-start-btn{
+    width: 100%;
+    text-align: center;
+    padding: 13px 16px;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    border-radius: 12px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: 0 6px 20px rgba(31, 111, 92, 0.35);
+    animation: flashPulse 1.8s infinite ease-in-out;
+  }
+  @keyframes flashPulse {
+    0% { transform: scale(1); box-shadow: 0 6px 20px rgba(31, 111, 92, 0.35); }
+    50% { transform: scale(1.02); box-shadow: 0 10px 28px rgba(31, 111, 92, 0.6); filter: brightness(1.1); }
+    100% { transform: scale(1); box-shadow: 0 6px 20px rgba(31, 111, 92, 0.35); }
+  }
+
+  .floating-saved-plans-btn{
+    width: 100%;
+    text-align: center;
+    padding: 11px 16px;
+    font-size: 0.88rem;
+    border-radius: 12px;
+    background: var(--panel);
+    color: var(--gold);
+    border: 1.5px solid var(--gold);
+    box-shadow: 0 4px 14px rgba(201, 138, 43, 0.2);
+    font-weight: 600;
+  }
+  .floating-saved-plans-btn:hover{ background:var(--gold); color:#fff; }
+
+  .floating-nav-left{
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    padding: 10px 16px;
+    z-index: 500;
+    display: flex;
+    gap: 8px;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  }
+  .floating-nav-left button { flex: 1; }
+  @media(min-width: 1024px){
+    .floating-nav-left{
+      position: fixed;
+      left: 20px;
+      bottom: 24px;
+      width: 240px;
+      background: transparent;
+      border-top: none;
+      padding: 0;
+      box-shadow: none;
+      flex-direction: column;
+    }
+  }
+
+  .floating-nav-right{
+    position: fixed;
+    right: 16px;
+    bottom: 66px;
+    z-index: 501;
+    width: calc(100% - 32px);
+    display: flex;
+    gap: 8px;
+  }
+  .floating-nav-right button { width: 100%; box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+  @media(min-width: 1024px){
+    .floating-nav-right{
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      bottom: auto;
+      transform: translateY(-50%);
+      width: auto;
+      flex-direction: column;
+    }
+    .floating-nav-right button { width: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  }
+
+  .sticky-meal-tabs-container{
+    position: sticky;
+    top: 0;
+    z-index: 400;
+    background: var(--panel);
+    padding: 10px 0 6px 0;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  @media(min-width: 1024px){
+    .sticky-meal-tabs-container{
+      position: static;
+      background: transparent;
+      padding: 0;
+      border-bottom: none;
+    }
+  }
+
+  .field{margin-bottom:22px;}
+  .field input[type=number], .field input[type=text]{
+    width:100%;
+    font-size:1.35rem;
+    font-family:'IBM Plex Sans', sans-serif;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:var(--panel-soft);
+    color:var(--ink);
+  }
+
+  .meal-tabs{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .meal-tab{
+    padding:8px 14px; border-radius:999px; font-size:.85rem; font-weight:600;
+    background:var(--panel-soft); color:var(--ink-soft); border:1.5px solid transparent;
+    white-space:nowrap; flex:0 0 auto;
+  }
+  .meal-tab.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+  .meal-tab.total-tab{
+    background:var(--warn-soft); 
+    color:var(--warn); 
+    border-color:var(--warn);
+    pointer-events: none;
+    cursor: default;
+  }
+  .meal-tab.total-tab.active{
+    background:var(--warn); 
+    color:#fff;
+    pointer-events: none;
+    cursor: default;
+  }
+  .meal-tab .tab-total{display:block; font-size:.7rem; font-weight:500; color:var(--ink-soft); margin-top:2px;}
+  .meal-tab.active .tab-total{color:var(--accent-ink); opacity:0.9;}
+  .meal-tab.total-tab .tab-total{color:var(--warn); font-weight:700;}
+  .meal-tab.total-tab.active .tab-total{color:#fff;}
+
+  .totals-sidebar{
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 99;
+    margin-bottom: 16px;
+  }
+  @media(min-width: 1024px){
+    .totals-sidebar{
+      position: fixed;
+      left: 20px;
+      top: 24px;
+      width: 240px;
+      padding: 16px;
+      gap: 12px;
+      margin-bottom: 0;
+    }
+  }
+  .tb-block{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tb-title{font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-soft);}
+  .tb-val{font-size:1.1rem; font-weight:600; color:var(--accent);}
+  .tb-macros{font-size:.78rem; background:var(--panel-soft); padding:6px 10px; border-radius:8px; display:flex; flex-direction:column; gap:2px; color:var(--ink-soft);}
+  .tb-macros span{font-weight:600; color:var(--ink);}
+
+  .search-box{
+    margin-bottom:14px;
+  }
+  .search-box input{
+    width:100%; padding:10px 14px; border-radius:10px; border:1.5px solid var(--line);
+    background:var(--panel-soft); color:var(--ink); font-size:.95rem; font-family:inherit;
+    transition: border-color .2s ease;
+  }
+  .search-box input.error-input{
+    border-color: var(--warn) !important;
+    background: var(--warn-soft);
+  }
+
+  .table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; -webkit-overflow-scrolling: touch;}
+  table{width:100%; border-collapse:collapse; min-width:650px;}
+  thead th{
+    text-align:left; font-size:.78rem; font-weight:600; color:var(--ink-soft);
+    padding:10px 12px; border-bottom:1px solid var(--line); background:var(--panel-soft);
+  }
+  thead th.num-col, td.num-col{text-align:right;}
+  tbody td{padding:12px; border-bottom:1px solid var(--line); font-size:.88rem; vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.selected{background:color-mix(in srgb, var(--accent) 8%, transparent);}
+  
+  .dish-cell{display:flex; align-items:center; gap:12px;}
+  .img-container{position:relative; width:90px; height:90px; flex-shrink:0;}
+  @media(min-width: 768px){
+    .img-container{ width:176px; height:176px; }
+  }
+  .dish-img{
+    width:90px; height:90px; border-radius:12px; object-fit:cover; 
+    background:var(--panel-soft); border:1.5px dashed var(--line); 
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; 
+    font-size:.78rem; color:var(--ink-soft); text-align:center; padding:6px; line-height:1.3;
+  }
+  @media(min-width: 768px){
+    .dish-img{ width:176px; height:176px; font-size:.85rem; padding:8px; }
+  }
+  .dish-img:hover{border-color:var(--accent);}
+  .clear-img-btn{position:absolute; top:-6px; right:-6px; background:var(--warn); color:#fff; border-radius:50%; width:22px; height:22px; font-size:11px; display:flex; align-items:center; justify-content:center; cursor:pointer; border:none; padding:0;}
+  @media(min-width: 768px){
+    .clear-img-btn{ top:-8px; right:-8px; width:24px; height:24px; font-size:12px; }
+  }
+  .dish-name{font-weight:600; font-size:.92rem;}
+  @media(min-width: 768px){ .dish-name{font-size:1.05rem;} }
+
+  input[type=checkbox]{
+    width:18px; height:18px; accent-color:var(--accent); cursor:pointer;
+  }
+  .remove-x{color:var(--ink-soft); font-size:1.1rem; padding:6px 12px; border-radius:8px; background:transparent;}
+  .remove-x:hover{color:var(--warn); background:var(--warn-soft);}
+
+  .portion-box{
+    display:inline-flex; align-items:center; gap:4px; justify-content:flex-end;
+  }
+  .mini-input{
+    width:52px; padding:5px 4px; border-radius:6px; border:1.5px solid var(--line);
+    background:var(--panel-soft); color:var(--ink); font-size:.85rem; text-align:right;
+    transition: border-color .2s ease;
+  }
+  @media(min-width: 768px){ .mini-input{ width:65px; padding:5px 6px; } }
+  .mini-input.error-input{
+    border-color: var(--warn) !important;
+    background: var(--warn-soft);
+  }
+
+  .unit-select{
+    padding:5px 2px; border-radius:6px; border:1.5px solid var(--line);
+    background:var(--panel-soft); color:var(--ink); font-size:.75rem; font-weight:500;
+  }
+  @media(min-width: 768px){ .unit-select{ padding:5px 4px; font-size:.8rem; } }
+
+  .add-row{
+    display:flex; gap:10px; align-items:center; padding:12px; border-top:1px dashed var(--line);
+    flex-wrap:wrap;
+  }
+  .add-row input[type=text]{
+    flex:1; min-width:180px; padding:8px 12px; border-radius:8px; border:1.5px dashed var(--line);
+    background:transparent; font-size:.88rem;
+  }
+  .ai-tag{font-size:.75rem; color:var(--gold); font-weight:600;}
+  .loading-dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--gold); margin-right:6px; animation:pulse 1s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.3} 50%{opacity:1}}
+
+  .manual-edit-input {
+    width: 60px;
+    padding: 4px;
+    border-radius: 6px;
+    border: 1.5px solid var(--line);
+    background: var(--panel-soft);
+    color: var(--ink);
+    font-size: 0.85rem;
+    text-align: right;
+  }
+  .manual-edit-input:focus {
+    border-color: var(--accent);
+    background: var(--panel);
+  }
+
+  .compact-list{display:flex; flex-direction:column; gap:8px; margin-top:14px; margin-bottom:18px;}
+  .compact-item{
+    display:flex; align-items:center; justify-content:space-between; background:var(--panel-soft);
+    border:1px solid var(--line); border-radius:10px; padding:10px 12px; gap:8px; font-size:.85rem;
+  }
+  @media(min-width: 768px){ .compact-item{ padding:10px 14px; gap:10px; font-size:.88rem; } }
+  .compact-item .info{flex:1; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  @media(min-width: 768px){ .compact-item .info{ gap:14px; } }
+  .compact-item .meal-badge{background:var(--accent); color:var(--accent-ink); padding:3px 8px; border-radius:6px; font-size:.75rem; font-weight:600;}
+  .compact-item .d-name{font-weight:600;}
+  .compact-item .d-cal{color:var(--accent); font-weight:600;}
+  .compact-remove{background:var(--warn-soft); color:var(--warn); border:none; width:28px; height:28px; border-radius:50%; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;}
+  .compact-remove:hover{background:var(--warn); color:#fff;}
+
+  .summary-meal{
+    border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:12px; background:var(--panel-soft);
+  }
+  .summary-meal h3{font-size:1.1rem; margin-bottom:6px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;}
+  .summary-meal .s-macros{font-size:.82rem; color:var(--ink-soft); margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed var(--line);}
+  .summary-meal .s-macros b{color:var(--ink);}
+  .summary-meal ul{margin:0; padding-left:0; list-style:none;}
+  .summary-meal li{
+    display:flex; justify-content:space-between; font-size:.9rem; color:var(--ink-soft); padding:5px 0; gap:8px;
+  }
+  .summary-meal li b{color:var(--ink); font-weight:500; text-align:right;}
+  
+  .grand-total{text-align:center; padding:16px 0 6px;}
+  .grand-total .kcal{font-family:'Newsreader', serif; font-size:2.2rem; font-weight:600; color:var(--accent);}
+  @media(min-width: 768px){ .grand-total .kcal{ font-size:2.5rem; } }
+  .macro-row{display:flex; justify-content:center; gap:16px; margin-top:12px; flex-wrap:wrap;}
+  @media(min-width: 768px){ .macro-row{ gap:22px; } }
+  .macro-row div{text-align:center;}
+  .macro-row .v{font-weight:600; font-size:1.05rem;}
+  .macro-row .l{font-size:.75rem; color:var(--ink-soft);}
+
+  .saved-plan-card {
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .saved-plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+  }
+  .saved-plan-title-input {
+    font-weight: 600;
+    font-size: 1.05rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1.5px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    flex: 1;
+    min-width: 200px;
+  }
+  .saved-plan-meta {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+  .day-card {
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .day-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--accent);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<input type="file" id="hidden-file-input" accept="image/*" style="display:none;" />
+<script>
+(function(){
+  "use strict";
+
+  // Thay thế URL này bằng URL Google Apps Script Web App của bạn
+  var GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxQdjnV5F5h35zA5O6efnJvDdNKP92d-0Yob8jlB9Ik7jaAK8X4R1zyVWBsDLRH-NgoeA/exec";
+
+  var DEFAULT_FOOD_DB = [
+    {id:"f1",  name:"Cơm trắng",             image:"", calories:130, protein:2.7,  carbs:28, fat:0.3, portion:100, basePortion:100, unit:"g"},
+    {id:"f2",  name:"Ức gà luộc",             image:"", calories:165, protein:31,  carbs:0,  fat:3.6, portion:100, basePortion:100, unit:"g"},
+    {id:"f3",  name:"Trứng gà luộc",          image:"", calories:78,  protein:6.3, carbs:0.6,fat:5.3, portion:1,   basePortion:1,   unit:"quả"},
+    {id:"f4",  name:"Cá hồi áp chảo",         image:"", calories:208, protein:20,  carbs:0,  fat:13,  portion:100, basePortion:100, unit:"g"},
+    {id:"f5",  name:"Thịt bò xào",            image:"", calories:250, protein:26,  carbs:2,  fat:15,  portion:100, basePortion:100, unit:"g"},
+    {id:"f6",  name:"Đậu hũ chiên",           image:"", calories:271, protein:17,  carbs:10, fat:20,  portion:100, basePortion:100, unit:"g"},
+    {id:"f7",  name:"Sữa tươi không đường",   image:"", calories:124, protein:7.9, carbs:11, fat:5.7, portion:200, basePortion:200, unit:"ml"},
+    {id:"f8",  name:"Salad rau trộn",         image:"", calories:60,  protein:2,   carbs:8,  fat:2.5, portion:150, basePortion:150, unit:"g"},
+    {id:"f9",  name:"Canh bí đỏ",             image:"", calories:45,  protein:1.5, carbs:9,  fat:0.5, portion:200, basePortion:200, unit:"ml"},
+    {id:"f10", name:"Bún thịt nướng",         image:"", calories:420, protein:22,  carbs:55, fat:12,  portion:1,   basePortion:1,   unit:"bát"},
+    {id:"f11", name:"Phở bò",                 image:"", calories:450, protein:25,  carbs:60, fat:10,  portion:1,   basePortion:1,   unit:"bát"},
+    {id:"f12", name:"Bánh mì trứng",          image:"", calories:380, protein:14,  carbs:45, fat:15,  portion:1,   basePortion:1,   unit:"cái"},
+    {id:"f13", name:"Chuối chín",             image:"", calories:105, protein:1.3, carbs:27, fat:0.3, portion:1,   basePortion:1,   unit:"trái"},
+    {id:"f14", name:"Táo Mỹ",                 image:"", calories:95,  protein:0.5, carbs:25, fat:0.3, portion:1,   basePortion:1,   unit:"quả"},
+    {id:"f15", name:"Yến mạch nấu sữa",       image:"", calories:150, protein:6,   carbs:25, fat:3,   portion:200, basePortion:200, unit:"ml"},
+    {id:"f16", name:"Khoai lang luộc",        image:"", calories:86,  protein:1.6, carbs:20, fat:0.1, portion:100, basePortion:100, unit:"g"},
+    {id:"f17", name:"Sinh tố bơ",             image:"", calories:230, protein:3,   carbs:20, fat:16,  portion:250, basePortion:250, unit:"ml"}
+  ];
+
+  var FOOD_DB = [];
+  try {
+    var savedData = localStorage.getItem("meal_plan_food_db");
+    if (savedData) {
+      FOOD_DB = JSON.parse(savedData);
+    } else {
+      FOOD_DB = DEFAULT_FOOD_DB;
+    }
+  } catch(e) {
+    FOOD_DB = DEFAULT_FOOD_DB;
+  }
+
+  var FOOD_MAP = {};
+  function rebuildFoodMap(){
+    FOOD_MAP = {};
+    FOOD_DB.forEach(function(f){ FOOD_MAP[f.id] = f; });
+    try {
+      localStorage.setItem("meal_plan_food_db", JSON.stringify(FOOD_DB));
+    } catch(e) {}
+  }
+  rebuildFoodMap();
+
+  var savedPlans = [];
+  try {
+    var sp = localStorage.getItem("meal_plan_saved_lists");
+    if(sp) savedPlans = JSON.parse(sp);
+  } catch(e){}
+
+  var weekSchedule = {
+    "Thứ Hai": null, "Thứ Ba": null, "Thứ Tư": null, "Thứ Năm": null,
+    "Thứ Sáu": null, "Thứ Bảy": null, "Chủ Nhật": null
+  };
+  try {
+    var ws = localStorage.getItem("meal_plan_week_schedule");
+    if(ws) weekSchedule = JSON.parse(ws);
+  } catch(e){}
+
+  function saveAppData(){
+    try {
+      localStorage.setItem("meal_plan_saved_lists", JSON.stringify(savedPlans));
+      localStorage.setItem("meal_plan_week_schedule", JSON.stringify(weekSchedule));
+    } catch(e){}
+  }
+
+  // Tích hợp đồng bộ Google Sheets
+  var actions = {};
+
+  actions.syncToCloud = async function(){
+    if(GAS_WEB_APP_URL.includes("YOUR_WEB_APP_URL_HERE")){
+      alert("Vui lòng cấu hình URL Google Apps Script Web App trong mã nguồn trước!");
+      return;
+    }
+    
+    var payload = {
+      foodDb: FOOD_DB,
+      savedPlans: savedPlans,
+      weekSchedule: weekSchedule
+    };
+
+    alert("Đang đồng bộ dữ liệu lên Google Sheets...");
+    try {
+      await fetch(GAS_WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      alert("Đồng bộ lên Google Sheets thành công!");
+    } catch(err) {
+      console.error(err);
+      alert("Có lỗi xảy ra khi đồng bộ.");
+    }
+  };
+
+  actions.syncFromCloud = async function(){
+    if(GAS_WEB_APP_URL.includes("YOUR_WEB_APP_URL_HERE")){
+      alert("Vui lòng cấu hình URL Google Apps Script Web App trong mã nguồn trước!");
+      return;
+    }
+
+    alert("Đang tải dữ liệu từ Google Sheets...");
+    try {
+      var res = await fetch(GAS_WEB_APP_URL);
+      var data = await res.json();
+      if(data){
+        if(data.foodDb){
+          FOOD_DB = data.foodDb;
+          rebuildFoodMap();
+        }
+        if(data.savedPlans){
+          savedPlans = data.savedPlans;
+        }
+        if(data.weekSchedule){
+          weekSchedule = data.weekSchedule;
+        }
+        saveAppData();
+        render();
+        alert("Tải và cập nhật dữ liệu từ Google Sheets thành công!");
+      } else {
+        alert("Chưa có dữ liệu trên Google Sheets.");
+      }
+    } catch(err) {
+      console.error(err);
+      alert("Không thể tải dữ liệu từ Google Sheets.");
+    }
+  };
+
+  var STEP_LABELS = ["Số bữa", "Lượng calo", "Chọn món", "Vượt ngưỡng", "Hoàn tất"];
+
+  var state = {
+    step: "start",
+    numMeals: 3,
+    desiredCalories: 1800,
+    currentTab: 0,
+    meals: [],
+    searchQuery: "",
+    searchHasError: false,
+    editingSavedPlanId: null
+  };
+
+  var activeFoodIdForImage = null;
+  var fileInput = document.getElementById("hidden-file-input");
+  fileInput.addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(file && activeFoodIdForImage){
+      var reader = new FileReader();
+      reader.onload = function(evt){
+        var food = FOOD_MAP[activeFoodIdForImage];
+        if(food){
+          food.image = evt.target.result;
+          rebuildFoodMap();
+          render();
+        }
+        fileInput.value = "";
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  function ensureMeals(n){
+    var meals = [];
+    for (var i=0;i<n;i++){
+      var existing = state.meals[i];
+      meals.push(existing || {selectedIds:{}, foodPortions:{}, foodUnits:{}, portionErrors:{}});
+    }
+    state.meals = meals;
+  }
+
+  function getComputedNutrients(food, portion){
+    var base = food.basePortion || food.portion || 1;
+    var current = (portion != null && portion !== "" && !isNaN(portion) && Number(portion) > 0) ? Number(portion) : base;
+    var ratio = current / base;
+    return {
+      calories: round1(food.calories * ratio),
+      protein: round1(food.protein * ratio),
+      carbs: round1(food.carbs * ratio),
+      fat: round1(food.fat * ratio),
+      portion: current
+    };
+  }
+
+  function mealTotal(meal){
+    var total = 0;
+    Object.keys(meal.selectedIds).forEach(function(id){
+      if (meal.selectedIds[id] && FOOD_MAP[id]) {
+        var p = meal.foodPortions[id];
+        total += getComputedNutrients(FOOD_MAP[id], p).calories;
+      }
+    });
+    return round1(total);
+  }
+
+  function mealMacro(meal, key){
+    var total = 0;
+    Object.keys(meal.selectedIds).forEach(function(id){
+      if (meal.selectedIds[id] && FOOD_MAP[id]) {
+        var p = meal.foodPortions[id];
+        total += getComputedNutrients(FOOD_MAP[id], p)[key];
+      }
+    });
+    return round1(total);
+  }
+
+  function grandTotal(){
+    var t = 0;
+    state.meals.forEach(function(m){ t += mealTotal(m); });
+    return round1(t);
+  }
+
+  function grandMacro(key){
+    var t = 0;
+    state.meals.forEach(function(m){ t += mealMacro(m, key); });
+    return round1(t);
+  }
+
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function round1(n){ return Math.round((n||0)*10)/10; }
+
+  async function fetchAIAnalysis(foodName) {
+    return new Promise(function(resolve) {
+      setTimeout(function() {
+        var nameLower = foodName.toLowerCase();
+        var mock = { calories: 180, protein: 8, carbs: 22, fat: 5, portion: 100, unit: "g" };
+        if (nameLower.indexOf("nước") !== -1 || nameLower.indexOf("sữa") !== -1) {
+          mock = { calories: 120, protein: 3, carbs: 18, fat: 3, portion: 200, unit: "ml" };
+        } else if (nameLower.indexOf("quả") !== -1 || nameLower.indexOf("trái") !== -1) {
+          mock = { calories: 80, protein: 1, carbs: 19, fat: 0.2, portion: 1, unit: "quả" };
+        } else if (nameLower.indexOf("trứng") !== -1) {
+          mock = { calories: 78, protein: 6, carbs: 0.5, fat: 5, portion: 1, unit: "quả" };
+        }
+        resolve(mock);
+      }, 500);
+    });
+  }
+
+  actions.goStart = function(){ state.step = "meals"; render(); window.scrollTo(0,0); };
+  actions.backToStart = function(){ state.step = "start"; render(); window.scrollTo(0,0); };
+  actions.setMealsCount = function(val){ state.numMeals = val; };
+
+  actions.toCalories = function(){ 
+    var n = parseInt(state.numMeals, 10);
+    state.numMeals = isNaN(n) || n < 1 ? 1 : (n > 8 ? 8 : n);
+    state.step = "calories"; render(); window.scrollTo(0,0);
+  };
+
+  actions.setCalories = function(val){ state.desiredCalories = val; };
+
+  actions.toFoods = function(){
+    var c = parseInt(state.desiredCalories, 10);
+    state.desiredCalories = isNaN(c) || c < 0 ? 0 : c;
+    ensureMeals(state.numMeals);
+    state.currentTab = 0;
+    state.step = "foods"; render(); window.scrollTo(0,0);
+  };
+  actions.backToMeals = function(){ state.step = "meals"; render(); window.scrollTo(0,0); };
+  actions.backToCalories = function(){ state.step = "calories"; render(); window.scrollTo(0,0); };
+  actions.switchTab = function(i){ state.currentTab = i; render(); };
+
+  actions.handleSearchInput = function(val){
+    state.searchQuery = val;
+    var hasNumber = /\d/.test(val);
+    state.searchHasError = hasNumber;
+
+    var inputEl = document.getElementById("foods-search-input");
+    if(inputEl){
+      if(hasNumber) inputEl.classList.add("error-input");
+      else inputEl.classList.remove("error-input");
+    }
+
+    var tbody = document.getElementById("dynamic-food-tbody");
+    if(tbody){
+      tbody.innerHTML = renderTableRows(state.step === "foods");
+    }
+  };
+
+  actions.toggleFood = function(mealIdx, foodId){
+    var meal = state.meals[mealIdx];
+    meal.selectedIds[foodId] = !meal.selectedIds[foodId];
+    if (meal.selectedIds[foodId] && meal.foodPortions[foodId] == null) {
+      meal.foodPortions[foodId] = FOOD_MAP[foodId].portion;
+      meal.foodUnits[foodId] = FOOD_MAP[foodId].unit;
+    }
+    render();
+  };
+
+  actions.changePortion = function(mealIdx, foodId, val){
+    var meal = state.meals[mealIdx];
+    var isNotNumber = val !== "" && isNaN(Number(val));
+    if(!meal.portionErrors) meal.portionErrors = {};
+    meal.portionErrors[foodId] = isNotNumber;
+
+    var inputEl = document.getElementById("portion-input-" + mealIdx + "-" + foodId);
+    if(inputEl){
+      if(isNotNumber) inputEl.classList.add("error-input");
+      else inputEl.classList.remove("error-input");
+    }
+
+    if(!isNotNumber){
+      meal.foodPortions[foodId] = val;
+      var food = FOOD_MAP[foodId];
+      var computed = getComputedNutrients(food, val);
+      
+      var tr = document.getElementById("row-" + foodId);
+      if (tr) {
+        var cells = tr.querySelectorAll("td.num-col.num");
+        if(cells.length >= 4){
+          cells[0].textContent = computed.calories;
+          cells[1].textContent = computed.protein;
+          cells[2].textContent = computed.carbs;
+          cells[3].textContent = computed.fat;
+        }
+      }
+      updateTotalsUI();
+    }
+  };
+
+  actions.changePortionOW = function(mealIdx, foodId, val){
+    var meal = state.meals[mealIdx];
+    var isNotNumber = val !== "" && isNaN(Number(val));
+    if(!meal.portionErrors) meal.portionErrors = {};
+    meal.portionErrors[foodId] = isNotNumber;
+
+    var inputEl = document.getElementById("ow-portion-" + mealIdx + "-" + foodId);
+    if(inputEl){
+      if(isNotNumber) inputEl.classList.add("error-input");
+      else inputEl.classList.remove("error-input");
+    }
+
+    if(!isNotNumber){
+      meal.foodPortions[foodId] = val;
+      var food = FOOD_MAP[foodId];
+      var computed = getComputedNutrients(food, val);
+      
+      var calEl = document.getElementById("ow-cal-" + mealIdx + "-" + foodId);
+      if (calEl) calEl.textContent = computed.calories + " kcal";
+      
+      updateTotalsUI();
+    }
+  };
+
+  actions.changeUnit = function(mealIdx, foodId, unitVal){
+    var meal = state.meals[mealIdx];
+    meal.foodUnits[foodId] = unitVal;
+  };
+  actions.changeUnitOW = actions.changeUnit;
+
+  actions.triggerUpload = function(foodId){
+    activeFoodIdForImage = foodId;
+    fileInput.click();
+  };
+
+  actions.removeImage = function(foodId, event){
+    event.stopPropagation();
+    var food = FOOD_MAP[foodId];
+    if(food){
+      food.image = "";
+      rebuildFoodMap();
+      render();
+    }
+  };
+
+  actions.updateManualNutrient = function(foodId, field, val){
+    var food = FOOD_MAP[foodId];
+    if(food){
+      var num = parseFloat(val);
+      food[field] = isNaN(num) ? 0 : num;
+      food.aiFilled = false;
+      rebuildFoodMap();
+      updateTotalsUI();
+    }
+  };
+
+  actions.addGlobalFood = async function(){
+    var nameInput = document.getElementById("global-food-name");
+    if(!nameInput) return;
+    var name = nameInput.value.trim();
+    if(!name) return;
+
+    var id = "f_" + Date.now();
+    var tempItem = { id: id, name: name, image: "", calories: 0, protein: 0, carbs: 0, fat: 0, portion: 100, basePortion: 100, unit: "g", loading: true };
+    FOOD_DB.push(tempItem);
+    rebuildFoodMap();
+    nameInput.value = "";
+    render();
+
+    var res = await fetchAIAnalysis(name);
+    tempItem.calories = Number(res.calories) || 0;
+    tempItem.protein  = Number(res.protein)  || 0;
+    tempItem.carbs    = Number(res.carbs)    || 0;
+    tempItem.fat      = Number(res.fat)      || 0;
+    tempItem.portion  = Number(res.portion)  || 100;
+    tempItem.basePortion = tempItem.portion;
+    tempItem.unit     = res.unit || "g";
+    tempItem.loading  = false;
+    tempItem.aiFilled = true;
+    rebuildFoodMap();
+    render();
+  };
+
+  actions.deleteGlobalFood = function(id){
+    FOOD_DB = FOOD_DB.filter(function(f){ return f.id !== id; });
+    rebuildFoodMap();
+    render();
+  };
+
+  actions.resetDefaultFoods = function(){
+    if(confirm("Bạn có chắc chắn muốn đưa danh sách món ăn về mặc định không?")){
+      localStorage.removeItem("meal_plan_food_db");
+      FOOD_DB = JSON.parse(JSON.stringify(DEFAULT_FOOD_DB));
+      rebuildFoodMap();
+      render();
+    }
+  };
+
+  function updateTotalsUI(){
+    var total = grandTotal();
+    
+    var elAllKcal = document.getElementById("lbl-all-day-kcal");
+    if(elAllKcal) elAllKcal.textContent = total;
+    var elAllPro = document.getElementById("lbl-all-day-pro");
+    if(elAllPro) elAllPro.textContent = grandMacro("protein");
+    var elAllCarb = document.getElementById("lbl-all-day-carb");
+    if(elAllCarb) elAllCarb.textContent = grandMacro("carbs");
+    var elAllFat = document.getElementById("lbl-all-day-fat");
+    if(elAllFat) elAllFat.textContent = grandMacro("fat");
+
+    var elCurrKcal = document.getElementById("lbl-current-meal-kcal");
+    var n = state.meals.length;
+    if(state.currentTab < n){
+      var activeMeal = state.meals[state.currentTab];
+      if(elCurrKcal && activeMeal) elCurrKcal.textContent = mealTotal(activeMeal);
+      var elCurrPro = document.getElementById("lbl-current-meal-pro");
+      if(elCurrPro && activeMeal) elCurrPro.textContent = mealMacro(activeMeal, 'protein');
+      var elCurrCarb = document.getElementById("lbl-current-meal-carb");
+      if(elCurrCarb && activeMeal) elCurrCarb.textContent = mealMacro(activeMeal, 'carbs');
+      var elCurrFat = document.getElementById("lbl-current-meal-fat");
+      if(elCurrFat && activeMeal) elCurrFat.textContent = mealMacro(activeMeal, 'fat');
+    } else {
+      if(elCurrKcal) elCurrKcal.textContent = total;
+      var elCurrPro = document.getElementById("lbl-current-meal-pro");
+      if(elCurrPro) elCurrPro.textContent = grandMacro('protein');
+      var elCurrCarb = document.getElementById("lbl-current-meal-carb");
+      if(elCurrCarb) elCurrCarb.textContent = grandMacro('carbs');
+      var elCurrFat = document.getElementById("lbl-current-meal-fat");
+      if(elCurrFat) elCurrFat.textContent = grandMacro('fat');
+    }
+
+    var totalEl = document.getElementById("ow-grand-total");
+    if (totalEl) {
+      totalEl.textContent = total + " kcal";
+      if (total > Number(state.desiredCalories) + 100) {
+        totalEl.style.color = "var(--warn)";
+      } else {
+        totalEl.style.color = "var(--accent)";
+      }
+    }
+  }
+
+  actions.finishPlan = function(){
+    var total = grandTotal();
+    var limit = Number(state.desiredCalories) + 100;
+    if (total > limit){
+      state.step = "overweight";
+      render(); window.scrollTo(0,0);
+    } else {
+      state.step = "done";
+      render(); window.scrollTo(0,0);
+    }
+  };
+
+  actions.removeItemFromOverweight = function(mealIdx, foodId){
+    var meal = state.meals[mealIdx];
+    if(meal && meal.selectedIds[foodId]){
+      meal.selectedIds[foodId] = false;
+      render();
+    }
+  };
+
+  actions.proceedFromOverweight = function(){
+    var total = grandTotal();
+    var limit = Number(state.desiredCalories) + 100;
+    if (total > limit){
+      state.step = "overweight";
+      render(); window.scrollTo(0,0);
+    } else {
+      state.step = "done";
+      render(); window.scrollTo(0,0);
+    }
+  };
+
+  actions.editSelections = function(){ 
+    if(state.editingSavedPlanId){
+      state.step = "saved_plans";
+    } else {
+      state.step = "foods"; 
+    }
+    state.currentTab = 0; 
+    render(); window.scrollTo(0,0); 
+  };
+
+  actions.restart = function(){
+    state = { step:"start", numMeals:3, desiredCalories:1800, currentTab:0, meals:[], searchQuery:"", searchHasError:false, editingSavedPlanId:null };
+    render(); window.scrollTo(0,0);
+  };
+
+  actions.saveCurrentPlanToStorage = function(){
+    var planName = prompt("Nhập tên cho kế hoạch bữa ăn này:", "Kế hoạch ngày " + (savedPlans.length + 1));
+    if(!planName) return;
+
+    var planObj = {
+      id: state.editingSavedPlanId || ("plan_" + Date.now()),
+      name: planName,
+      desiredCalories: state.desiredCalories,
+      meals: JSON.parse(JSON.stringify(state.meals)),
+      createdAt: new Date().toLocaleDateString("vi-VN")
+    };
+
+    if(state.editingSavedPlanId){
+      var idx = savedPlans.findIndex(function(p){ return p.id === state.editingSavedPlanId; });
+      if(idx !== -1) savedPlans[idx] = planObj;
+      else savedPlans.push(planObj);
+      state.editingSavedPlanId = null;
+    } else {
+      savedPlans.push(planObj);
+    }
+
+    saveAppData();
+    alert("Đã lưu kế hoạch thành công!");
+    actions.goToSavedPlans();
+  };
+
+  actions.goToSavedPlans = function(){
+    state.step = "saved_plans";
+    state.editingSavedPlanId = null;
+    render(); window.scrollTo(0,0);
+  };
+
+  actions.deleteSavedPlan = function(id){
+    if(confirm("Bạn có chắc chắn muốn xóa kế hoạch này không?")){
+      savedPlans = savedPlans.filter(function(p){ return p.id !== id; });
+      Object.keys(weekSchedule).forEach(function(day){
+        if(weekSchedule[day] && weekSchedule[day].id === id){
+          weekSchedule[day] = null;
+        }
+      });
+      saveAppData();
+      render();
+    }
+  };
+
+  actions.editSavedPlan = function(id){
+    var plan = savedPlans.find(function(p){ return p.id === id; });
+    if(plan){
+      state.editingSavedPlanId = plan.id;
+      state.desiredCalories = plan.desiredCalories;
+      state.numMeals = plan.meals.length;
+      state.meals = JSON.parse(JSON.stringify(plan.meals));
+      state.step = "foods";
+      state.currentTab = 0;
+      render(); window.scrollTo(0,0);
+    }
+  };
+
+  actions.updateSavedPlanName = function(id, newName){
+    var plan = savedPlans.find(function(p){ return p.id === id; });
+    if(plan){
+      plan.name = newName;
+      saveAppData();
+    }
+  };
+
+  actions.goToWeekSchedule = function(){
+    state.step = "week_schedule";
+    render(); window.scrollTo(0,0);
+  };
+
+  actions.applyPlanToDay = function(dayName, planId){
+    if(!planId){
+      weekSchedule[dayName] = null;
+    } else {
+      var plan = savedPlans.find(function(p){ return p.id === planId; });
+      if(plan){
+        weekSchedule[dayName] = JSON.parse(JSON.stringify(plan));
+      }
+    }
+    saveAppData();
+    render();
+  };
+
+  window.__mealPlanActions = actions;
+
+  function stepIndex(){ 
+    return {start:-1, meals:0, calories:1, foods:2, overweight:3, done:4}[state.step]; 
+  }
+
+  function renderStepDots(){
+    if (["start", "saved_plans", "week_schedule"].indexOf(state.step) !== -1) return "";
+    var idx = stepIndex();
+    var html = '<div class="steps">';
+    STEP_LABELS.forEach(function(label, i){
+      html += '<div class="step-dot ' + (i===idx?"active":(i<idx?"done":"")) + '">' + (i+1) + '</div>';
+      if (i < STEP_LABELS.length-1) html += '<div class="step-connector"></div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function renderUnitSelect(currentUnit, onChangeCode) {
+    var units = ["g", "ml", "quả", "trái", "cái", "bát", "đĩa", "hộp"];
+    var html = '<select class="unit-select" onchange="' + onChangeCode + '">';
+    units.forEach(function(u){
+      html += '<option value="' + u + '" ' + (currentUnit===u?'selected':'') + '>' + u + '</option>';
+    });
+    html += '</select>';
+    return html;
+  }
+
+  function renderTableRows(isSelectMode){
+    var query = (state.searchQuery || "").toLowerCase().trim();
+    var filteredDB = FOOD_DB.filter(function(f){
+      return f.name.toLowerCase().indexOf(query) !== -1;
+    });
+
+    if(filteredDB.length === 0){
+      return '<tr><td colspan="7" style="text-align:center; color:var(--ink-soft); padding:24px;">Không tìm thấy món ăn phù hợp.</td></tr>';
+    }
+
+    return filteredDB.map(function(f){
+      if(f.loading){
+        if(isSelectMode){
+          return '<tr><td></td><td><div class="dish-cell"><div class="dish-img"></div><span class="dish-name">' + esc(f.name) + '</span></div></td><td colspan="5" style="color:var(--gold);"><span class="loading-dot"></span>AI đang tự động tính thành phần dinh dưỡng...</td></tr>';
+        } else {
+          return '<tr><td><div class="dish-cell"><div class="dish-img"></div><span class="dish-name">' + esc(f.name) + '</span></div></td><td colspan="6" style="color:var(--gold);"><span class="loading-dot"></span>AI đang tự động tính thành phần dinh dưỡng...</td></tr>';
+        }
+      }
+
+      var imgContent = f.image ? 
+        '<div class="img-container"><img src="' + esc(f.image) + '" class="dish-img" alt="img" onclick="__mealPlanActions.triggerUpload(\'' + f.id + '\')" title="Đổi ảnh"/><button class="clear-img-btn" onclick="__mealPlanActions.removeImage(\'' + f.id + '\', event)" title="Xóa ảnh">✕</button></div>' :
+        '<div class="img-container"><div class="dish-img" onclick="__mealPlanActions.triggerUpload(\'' + f.id + '\')" title="Thêm ảnh minh họa">+ Ảnh</div></div>';
+
+      if(isSelectMode){
+        var meal = state.meals[state.currentTab];
+        var checked = !!meal.selectedIds[f.id];
+        var currentPortion = meal.foodPortions[f.id] != null ? meal.foodPortions[f.id] : f.portion;
+        var currentUnit = meal.foodUnits[f.id] || f.unit || "g";
+        var computed = getComputedNutrients(f, currentPortion);
+        var hasErr = meal.portionErrors && meal.portionErrors[f.id];
+
+        return (
+          '<tr id="row-' + f.id + '" class="' + (checked?"selected":"") + '">' +
+            '<td><input type="checkbox" ' + (checked?"checked":"") + ' ' +
+              'onchange="__mealPlanActions.toggleFood(' + state.currentTab + ',\'' + f.id + '\')"/></td>' +
+            '<td>' +
+              '<div class="dish-cell">' +
+                imgContent +
+                '<div>' +
+                  '<span class="dish-name">' + esc(f.name) + '</span>' +
+                  (f.aiFilled ? ' <br><span class="ai-tag">✨ AI</span>' : '') +
+                '</div>' +
+              '</div>' +
+            '</td>' +
+            '<td class="num-col num">' + computed.calories + '</td>' +
+            '<td class="num-col num">' + computed.protein + '</td>' +
+            '<td class="num-col num">' + computed.carbs + '</td>' +
+            '<td class="num-col num">' + computed.fat + '</td>' +
+            '<td class="num-col">' +
+              '<div class="portion-box">' +
+                '<input id="portion-input-' + state.currentTab + '-' + f.id + '" class="mini-input ' + (hasErr ? 'error-input':'') + '" type="text" value="' + currentPortion + '" ' +
+                  'oninput="__mealPlanActions.changePortion(' + state.currentTab + ',\'' + f.id + '\',this.value)" />' +
+                renderUnitSelect(currentUnit, '__mealPlanActions.changeUnit(' + state.currentTab + ',\'' + f.id + '\',this.value)') +
+              '</div>' +
+            '</td>' +
+          '</tr>'
+        );
+      } else {
+        return (
+          '<tr>' +
+            '<td>' +
+              '<div class="dish-cell">' +
+                imgContent +
+                '<div>' +
+                  '<span class="dish-name">' + esc(f.name) + '</span>' +
+                  (f.aiFilled ? ' <br><span class="ai-tag">✨ AI</span>' : '') +
+                '</div>' +
+              '</div>' +
+            '</td>' +
+            '<td class="num-col"><input class="manual-edit-input num" type="number" step="any" value="' + f.calories + '" oninput="__mealPlanActions.updateManualNutrient(\'' + f.id + '\', \'calories\', this.value)" /></td>' +
+            '<td class="num-col"><input class="manual-edit-input num" type="number" step="any" value="' + f.protein + '" oninput="__mealPlanActions.updateManualNutrient(\'' + f.id + '\', \'protein\', this.value)" /></td>' +
+            '<td class="num-col"><input class="manual-edit-input num" type="number" step="any" value="' + f.carbs + '" oninput="__mealPlanActions.updateManualNutrient(\'' + f.id + '\', \'carbs\', this.value)" /></td>' +
+            '<td class="num-col"><input class="manual-edit-input num" type="number" step="any" value="' + f.fat + '" oninput="__mealPlanActions.updateManualNutrient(\'' + f.id + '\', \'fat\', this.value)" /></td>' +
+            '<td class="num-col">' +
+              '<div class="portion-box">' +
+                '<input class="mini-input" type="number" step="any" value="' + f.portion + '" oninput="__mealPlanActions.updateManualNutrient(\'' + f.id + '\', \'portion\', this.value); __mealPlanActions.updateManualNutrient(\'' + f.id + '\', \'basePortion\', this.value);" />' +
+                '<span>' + esc(f.unit) + '</span>' +
+              '</div>' +
+            '</td>' +
+            '<td><button class="remove-x" onclick="__mealPlanActions.deleteGlobalFood(\'' + f.id + '\')" title="Xóa món">✕</button></td>' +
+          '</tr>'
+        );
+      }
+    }).join("");
+  }
+
+  function renderStart(){
+    return (
+      '<div>' +
+        '<div class="floating-start-container">' +
+          '<button class="btn btn-primary floating-start-btn" onclick="__mealPlanActions.goStart()">✨ Bắt đầu kế hoạch ngay</button>' +
+          '<button class="btn floating-saved-plans-btn" onclick="__mealPlanActions.goToSavedPlans()">📂 Các kế hoạch đã lưu (' + savedPlans.length + ')</button>' +
+          '<div style="display:flex; gap:6px; margin-top:4px;">' +
+            '<button class="btn btn-ghost btn-sm" style="flex:1; font-size:0.75rem;" onclick="__mealPlanActions.syncToCloud()">☁️ Đồng bộ lên Sheet</button>' +
+            '<button class="btn btn-ghost btn-sm" style="flex:1; font-size:0.75rem;" onclick="__mealPlanActions.syncFromCloud()">📥 Tải từ Sheet</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="hero">' +
+          '<h1>Lên kế hoạch bữa ăn hôm nay</h1>' +
+          '<p>Chọn số bữa, đặt mức calo mong muốn và tra cứu thành phần dinh dưỡng phong phú được hỗ trợ bởi AI hoặc tự nhập thủ công.</p>' +
+        '</div>' +
+        '<div class="card tight" style="margin-top: 20px;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">' +
+            '<h3 style="margin:0; font-size:1.1rem;">📋 Danh sách món ăn trong hệ thống (Có thể sửa thủ công trực tiếp)</h3>' +
+            '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.resetDefaultFoods()">🔄 Khôi phục gốc</button>' +
+          '</div>' +
+          '<div class="search-box">' +
+            '<input id="foods-search-input" class="' + (state.searchHasError?'error-input':'') + '" type="text" placeholder="🔍 Tìm kiếm món ăn (chỉ nhập chữ)..." value="' + esc(state.searchQuery) + '" ' +
+              'oninput="__mealPlanActions.handleSearchInput(this.value)" />' +
+          '</div>' +
+          '<div class="table-wrap">' +
+            '<table>' +
+              '<thead><tr>' +
+                '<th>Món ăn</th><th class="num-col">Calo (kcal)</th><th class="num-col">Đạm (g)</th>' +
+                '<th class="num-col">Tinh bột (g)</th><th class="num-col">Béo (g)</th><th class="num-col">Khẩu phần cơ sở</th><th></th>' +
+              '</tr></thead>' +
+              '<tbody id="dynamic-food-tbody">' + renderTableRows(false) + '</tbody>' +
+              '<tfoot><tr><td colspan="7">' +
+                '<div class="add-row">' +
+                  '<input type="text" id="global-food-name" placeholder="Thêm món mới (Ví dụ: Trà sữa, Bún đậu... AI tự điền hoặc bạn tự sửa)" ' +
+                    'onkeydown="if(event.key===\'Enter\'){__mealPlanActions.addGlobalFood(); event.preventDefault();}" />' +
+                  '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.addGlobalFood()">✨ Thêm & AI</button>' +
+                '</div>' +
+              '</td></tr></tfoot>' +
+            '</table>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderMeals(){
+    return (
+      '<div>' +
+        '<div class="card">' +
+          '<h2>Nhập số bữa trong ngày</h2>' +
+          '<p>Bạn dự định ăn bao nhiêu bữa hôm nay? (Gõ từ bàn phím từ 1 đến 8 bữa)</p>' +
+          '<div class="field">' +
+            '<input type="number" min="1" max="8" value="' + state.numMeals + '" ' +
+              'oninput="__mealPlanActions.setMealsCount(this.value)" placeholder="Nhập số bữa..." />' +
+          '</div>' +
+        '</div>' +
+        '<div class="floating-nav-left">' +
+          '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.backToStart()">Trang chủ</button>' +
+        '</div>' +
+        '<div class="floating-nav-right">' +
+          '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.toCalories()">Tiếp tục ➔</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderCalories(){
+    return (
+      '<div>' +
+        '<div class="card">' +
+          '<h2>Chọn lượng calo mong muốn</h2>' +
+          '<p>Tổng năng lượng bạn muốn nạp trong ngày, tính bằng kcal (gõ từ bàn phím).</p>' +
+          '<div class="field">' +
+            '<input type="number" min="0" step="50" value="' + state.desiredCalories + '" ' +
+              'oninput="__mealPlanActions.setCalories(this.value)" />' +
+          '</div>' +
+        '</div>' +
+        '<div class="floating-nav-left">' +
+          '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.backToMeals()">Quay lại</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.backToStart()">Trang chủ</button>' +
+        '</div>' +
+        '<div class="floating-nav-right">' +
+          '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.toFoods()">Chọn món ăn ➔</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderFoods(){
+    var n = state.meals.length;
+    var totalTabsCount = n + 1;
+    if(state.currentTab >= totalTabsCount) state.currentTab = 0;
+
+    var tabsHtml = '<div class="sticky-meal-tabs-container"><div class="meal-tabs">';
+    for (var i=0;i<n;i++){
+      var active = i === state.currentTab;
+      tabsHtml += '<button class="meal-tab ' + (active?"active":"") + '" onclick="__mealPlanActions.switchTab(' + i + ')">' +
+        'Bữa ' + (i+1) +
+        '<span id="tab-total-' + i + '" class="tab-total">' + mealTotal(state.meals[i]) + ' kcal</span>' +
+      '</button>';
+    }
+    var isTotalActive = state.currentTab === n;
+    tabsHtml += '<div class="meal-tab total-tab ' + (isTotalActive?"active":"") + '">' +
+      '📊 Tổng calo' +
+      '<span id="tab-total-all" class="tab-total">' + grandTotal() + ' kcal</span>' +
+    '</div>';
+    tabsHtml += '</div></div>';
+
+    var total = grandTotal();
+
+    var sidebarHtml = 
+      '<div class="totals-sidebar">' +
+        '<div class="tb-block">' +
+          '<div class="tb-title">' + (state.currentTab < n ? ('Bữa ' + (state.currentTab+1)) : 'Cả ngày') + '</div>' +
+          '<div class="tb-val"><span id="lbl-current-meal-kcal" class="num">' + (state.currentTab < n ? mealTotal(state.meals[state.currentTab]) : total) + '</span> kcal</div>' +
+          '<div class="tb-macros">' +
+            '<div>Đạm: <span id="lbl-current-meal-pro" class="num">' + (state.currentTab < n ? mealMacro(state.meals[state.currentTab], 'protein') : grandMacro('protein')) + '</span>g</div>' +
+            '<div>Tinh bột: <span id="lbl-current-meal-carb" class="num">' + (state.currentTab < n ? mealMacro(state.meals[state.currentTab], 'carbs') : grandMacro('carbs')) + '</span>g</div>' +
+            '<div>Béo: <span id="lbl-current-meal-fat" class="num">' + (state.currentTab < n ? mealMacro(state.meals[state.currentTab], 'fat') : grandMacro('fat')) + '</span>g</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="height:1px; background:var(--line);"></div>' +
+        '<div class="tb-block">' +
+          '<div class="tb-title">Mục tiêu cả ngày</div>' +
+          '<div class="tb-val" style="font-size:1rem;"><span id="lbl-all-day-kcal" class="num">' + total + '</span> / ' + state.desiredCalories + ' kcal</div>' +
+          '<div class="tb-macros">' +
+            '<div>Đạm: <span id="lbl-all-day-pro" class="num">' + grandMacro('protein') + '</span>g</div>' +
+            '<div>Tinh bột: <span id="lbl-all-day-carb" class="num">' + grandMacro('carbs') + '</span>g</div>' +
+            '<div>Béo: <span id="lbl-all-day-fat" class="num">' + grandMacro('fat') + '</span>g</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    var floatingNavHtml = 
+      '<div class="floating-nav-left">' +
+        '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.backToCalories()">Quay lại</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.backToStart()">Trang chủ</button>' +
+      '</div>' +
+      '<div class="floating-nav-right">' +
+        (state.currentTab < n - 1 ?
+          '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.switchTab(' + (state.currentTab+1) + ')">Tiếp theo ➔</button>' :
+          '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.finishPlan()">✨ Tổng kết meal plan</button>'
+        ) +
+      '</div>';
+
+    var mainContentHtml = "";
+    if(state.currentTab < n){
+      mainContentHtml = (
+        '<div class="card tight">' +
+          '<div class="search-box">' +
+            '<input id="foods-search-input" class="' + (state.searchHasError?'error-input':'') + '" type="text" placeholder="🔍 Tìm kiếm món ăn để chọn (chỉ nhập chữ)..." value="' + esc(state.searchQuery) + '" ' +
+              'oninput="__mealPlanActions.handleSearchInput(this.value)" />' +
+          '</div>' +
+          '<div class="table-wrap">' +
+            '<table>' +
+              '<thead><tr>' +
+                '<th></th><th>Món ăn</th><th class="num-col">Calo</th><th class="num-col">Đạm (g)</th>' +
+                '<th class="num-col">Tinh bột (g)</th><th class="num-col">Béo (g)</th><th class="num-col">Khẩu phần</th>' +
+              '</tr></thead>' +
+              '<tbody id="dynamic-food-tbody">' + renderTableRows(true) + '</tbody>' +
+            '</table>' +
+          '</div>' +
+        '</div>'
+      );
+    }
+
+    return sidebarHtml + floatingNavHtml + (
+      '<div>' +
+        tabsHtml +
+        mainContentHtml +
+      '</div>'
+    );
+  }
+
+  function renderOverweight(){
+    var total = grandTotal();
+    var itemsHtml = "";
+    
+    state.meals.forEach(function(meal, mealIdx){
+      Object.keys(meal.selectedIds).forEach(function(id){
+        if(meal.selectedIds[id] && FOOD_MAP[id]){
+          var f = FOOD_MAP[id];
+          var p = meal.foodPortions[id];
+          var u = meal.foodUnits[id] || f.unit || "g";
+          var computed = getComputedNutrients(f, p);
+          var hasErr = meal.portionErrors && meal.portionErrors[id];
+          
+          itemsHtml += 
+            '<div class="compact-item" id="ow-item-' + mealIdx + '-' + id + '">' +
+              '<div class="info">' +
+                '<span class="meal-badge">Bữa ' + (mealIdx+1) + '</span>' +
+                '<span class="d-name">' + esc(f.name) + '</span>' +
+                '<div class="portion-box" style="margin-left:auto;">' +
+                  '<input id="ow-portion-' + mealIdx + '-' + id + '" class="mini-input ' + (hasErr ? 'error-input':'') + '" type="text" value="' + computed.portion + '" ' +
+                    'oninput="__mealPlanActions.changePortionOW(' + mealIdx + ',\'' + id + '\',this.value)" />' +
+                  renderUnitSelect(u, '__mealPlanActions.changeUnitOW(' + mealIdx + ',\'' + id + '\',this.value)') +
+                '</div>' +
+                '<span class="d-cal num" style="min-width:60px;text-align:right;" id="ow-cal-' + mealIdx + '-' + id + '">' + computed.calories + ' kcal</span>' +
+              '</div>' +
+              '<button class="compact-remove" onclick="__mealPlanActions.removeItemFromOverweight(' + mealIdx + ',\'' + id + '\')" title="Bỏ chọn">✕</button>' +
+            '</div>';
+        }
+      });
+    });
+
+    if(!itemsHtml){
+      itemsHtml = '<div style="text-align:center; color:var(--ink-soft); padding:16px;">Chưa có món nào được chọn.</div>';
+    }
+    
+    var colorWarn = (total > Number(state.desiredCalories) + 100) ? 'var(--warn)' : 'var(--accent)';
+
+    var sidebarHtml = 
+      '<div class="totals-sidebar">' +
+        '<div class="tb-block">' +
+          '<div class="tb-title">Cả ngày</div>' +
+          '<div class="tb-val" style="font-size:1rem;"><span id="lbl-all-day-kcal" class="num">' + total + '</span> / ' + state.desiredCalories + ' kcal</div>' +
+          '<div class="tb-macros">' +
+            '<div>Đạm: <span id="lbl-all-day-pro" class="num">' + grandMacro('protein') + '</span>g</div>' +
+            '<div>Tinh bột: <span id="lbl-all-day-carb" class="num">' + grandMacro('carbs') + '</span>g</div>' +
+            '<div>Béo: <span id="lbl-all-day-fat" class="num">' + grandMacro('fat') + '</span>g</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    var floatingNavHtml = 
+      '<div class="floating-nav-left">' +
+        '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.editSelections()">Quay lại chọn</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.backToStart()">Trang chủ</button>' +
+      '</div>' +
+      '<div class="floating-nav-right">' +
+        '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.proceedFromOverweight()">Kiểm tra & Hoàn tất</button>' +
+      '</div>';
+
+    return sidebarHtml + floatingNavHtml + (
+      '<div class="card">' +
+        '<h2>Vượt ngưỡng calo mong muốn, hãy giảm lượng khẩu phần hoặc giảm bớt món ăn nhé</h2>' +
+        '<p>Tổng năng lượng hiện tại: <b class="num" style="color:' + colorWarn + ';" id="ow-grand-total">' + total + ' kcal</b> / Mục tiêu: <b class="num">' + state.desiredCalories + ' kcal</b></p>' +
+        '<div class="compact-list">' + itemsHtml + '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderDone(){
+    var total = grandTotal();
+    var protein = round1(grandMacro("protein"));
+    var carbs = round1(grandMacro("carbs"));
+    var fat = round1(grandMacro("fat"));
+
+    var mealsHtml = state.meals.map(function(meal, i){
+      var mPro = mealMacro(meal, "protein");
+      var mCarb = mealMacro(meal, "carbs");
+      var mFat = mealMacro(meal, "fat");
+      
+      var items = [];
+      FOOD_DB.forEach(function(f){
+        if (meal.selectedIds[f.id]) {
+          var p = meal.foodPortions[f.id];
+          var u = meal.foodUnits[f.id] || f.unit || "g";
+          var computed = getComputedNutrients(f, p);
+          items.push({name: f.name + ' (' + computed.portion + ' ' + u + ')', calories: computed.calories});
+        }
+      });
+      var itemsHtml = items.length ?
+        items.map(function(it){ return '<li><span>' + esc(it.name) + '</span><b class="num">' + it.calories + ' kcal</b></li>'; }).join("") :
+        '<li><span>Chưa chọn món nào</span><b>—</b></li>';
+        
+      return (
+        '<div class="summary-meal">' +
+          '<h3><span>Bữa ' + (i+1) + '</span> <span class="num" style="color:var(--accent)">' + mealTotal(meal) + ' kcal</span></h3>' +
+          '<div class="s-macros">Đạm: <b class="num">' + mPro + 'g</b> | Tinh bột: <b class="num">' + mCarb + 'g</b> | Béo: <b class="num">' + mFat + 'g</b></div>' +
+          '<ul>' + itemsHtml + '</ul>' +
+        '</div>'
+      );
+    }).join("");
+
+    return (
+      '<div>' +
+        '<div class="card">' +
+          '<h2>Hoàn tất kế hoạch bữa ăn</h2>' +
+          '<div class="grand-total">' +
+            '<div class="kcal num">' + total + ' <span style="font-size:1.1rem; color:var(--ink-soft);">kcal</span></div>' +
+            '<div style="color:var(--ink-soft);">Mục tiêu: ' + state.desiredCalories + ' kcal</div>' +
+            '<div class="macro-row">' +
+              '<div><div class="v num">' + protein + 'g</div><div class="l">Đạm</div></div>' +
+              '<div><div class="v num">' + carbs + 'g</div><div class="l">Tinh bột</div></div>' +
+              '<div><div class="v num">' + fat + 'g</div><div class="l">Béo</div></div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="margin-top:20px;">' + mealsHtml + '</div>' +
+          '<div style="margin-top:20px; text-align:center;">' +
+            '<button class="btn btn-primary" onclick="__mealPlanActions.saveCurrentPlanToStorage()">💾 Lưu kế hoạch này</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="floating-nav-left">' +
+          '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.editSelections()">Chỉnh sửa</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.backToStart()">Trang chủ</button>' +
+        '</div>' +
+        '<div class="floating-nav-right">' +
+          '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.goToSavedPlans()">📂 Xem đã lưu</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderSavedPlans(){
+    var plansHtml = "";
+    if(savedPlans.length === 0){
+      plansHtml = '<div style="text-align:center; color:var(--ink-soft); padding:32px;">Chưa có kế hoạch nào được lưu. Hãy tạo và lưu kế hoạch mới!</div>';
+    } else {
+      plansHtml = savedPlans.map(function(plan){
+        var totalCal = 0;
+        plan.meals.forEach(function(m){
+          Object.keys(m.selectedIds).forEach(function(id){
+            if(m.selectedIds[id] && FOOD_MAP[id]){
+              totalCal += getComputedNutrients(FOOD_MAP[id], m.foodPortions[id]).calories;
+            }
+          });
+        });
+
+        return (
+          '<div class="saved-plan-card">' +
+            '<div class="saved-plan-header">' +
+              '<input class="saved-plan-title-input" type="text" value="' + esc(plan.name) + '" onchange="__mealPlanActions.updateSavedPlanName(\'' + plan.id + '\', this.value)" />' +
+              '<div class="saved-plan-meta">Tạo ngày: ' + plan.createdAt + ' | ~' + round1(totalCal) + ' kcal</div>' +
+            '</div>' +
+            '<div style="display:flex; gap:8px; flex-wrap:wrap;">' +
+              '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.editSavedPlan(\'' + plan.id + '\')">✏️ Sửa món ăn</button>' +
+              '<button class="btn btn-warn btn-sm" onclick="__mealPlanActions.deleteSavedPlan(\'' + plan.id + '\')">🗑️ Xóa kế hoạch</button>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join("");
+    }
+
+    return (
+      '<div>' +
+        '<div class="card">' +
+          '<h2>Các kế hoạch đã lưu</h2>' +
+          '<p>Quản lý, xem lại hoặc chỉnh sửa các meal plan bạn đã lưu.</p>' +
+          '<div style="margin-top:16px;">' + plansHtml + '</div>' +
+        '</div>' +
+        '<div class="floating-nav-left">' +
+          '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.backToStart()">🏠 Trang chủ</button>' +
+        '</div>' +
+        '<div class="floating-nav-right">' +
+          '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.goToWeekSchedule()">📅 Áp dụng lịch tuần </button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderWeekSchedule(){
+    var days = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"];
+    
+    var daysHtml = days.map(function(day){
+      var assignedPlan = weekSchedule[day];
+      var optionsHtml = '<option value="">-- Chọn kế hoạch áp dụng --</option>';
+      savedPlans.forEach(function(p){
+        var selected = (assignedPlan && assignedPlan.id === p.id) ? 'selected' : '';
+        optionsHtml += '<option value="' + p.id + '" ' + selected + '>' + esc(p.name) + '</option>';
+      });
+
+      return (
+        '<div class="day-card">' +
+          '<div class="day-card-header">' +
+            '<span>' + day + '</span>' +
+            (assignedPlan ? '<button class="compact-remove" onclick="__mealPlanActions.applyPlanToDay(\'' + day + '\', \'\')" title="Xóa lịch ngày này">✕</button>' : '') +
+          '</div>' +
+          '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
+            '<select class="saved-plan-title-input" onchange="__mealPlanActions.applyPlanToDay(\'' + day + '\', this.value)">' +
+              optionsHtml +
+            '</select>' +
+          '</div>' +
+          (assignedPlan ? '<div style="font-size:0.85rem; color:var(--ink-soft);">Đang áp dụng: <b>' + esc(assignedPlan.name) + '</b></div>' : '') +
+        '</div>'
+      );
+    }).join("");
+
+    return (
+      '<div>' +
+        '<div class="card">' +
+          '<h2>Áp dụng kế hoạch vào các ngày trong tuần</h2>' +
+          '<p>Chọn meal plan phù hợp cho từng ngày. Bạn có thể thay thế (lưu đè) hoặc nhấn nút X để xóa lịch bất kỳ lúc nào.</p>' +
+          '<div style="margin-top:16px;">' + daysHtml + '</div>' +
+        '</div>' +
+        '<div class="floating-nav-left">' +
+          '<button class="btn btn-ghost btn-sm" onclick="__mealPlanActions.goToSavedPlans()">📂 Quay lại danh sách</button>' +
+        '</div>' +
+        '<div class="floating-nav-right">' +
+          '<button class="btn btn-primary btn-sm" onclick="__mealPlanActions.backToStart()">🏠 Về trang chủ</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function render(){
+    var body = "";
+    if (state.step === "start") body = renderStart();
+    else if (state.step === "meals") body = renderMeals();
+    else if (state.step === "calories") body = renderCalories();
+    else if (state.step === "foods") body = renderFoods();
+    else if (state.step === "overweight") body = renderOverweight();
+    else if (state.step === "done") body = renderDone();
+    else if (state.step === "saved_plans") body = renderSavedPlans();
+    else if (state.step === "week_schedule") body = renderWeekSchedule();
+
+    var shellClass = "shell";
+    if (state.step === "start") shellClass = "shell start-layout";
+    else if (state.step === "foods") shellClass = "shell foods-layout";
+    else if (state.step === "overweight") shellClass = "shell overweight-layout";
+
+    var html =
+      '<div class="' + shellClass + '">' +
+        '<div class="ticket-head">' +
+          '<div class="brand">Sổ tay bữa ăn AI</div>' +
+          renderStepDots() +
+        '</div>' +
+        (["start", "saved_plans", "week_schedule"].indexOf(state.step) === -1 ? '<div class="perforation"></div>' : '') +
+        body +
+      '</div>';
+
+    document.getElementById("app").innerHTML = html;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
